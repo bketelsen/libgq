@@ -3,7 +3,9 @@ package libgq
 import (
 	"fmt"
 	"go/importer"
+	"go/token"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -28,7 +30,9 @@ func NewPackageParser(pkgName string) *PackageParser {
 func (sp *PackageParser) Parse() error {
 	defs := make(map[string]*ast.Definition)
 	var defNames []string
-	pkg, err := importer.Default().Import(sp.PkgName)
+	fset := token.NewFileSet()
+	pkg, err := importer.ForCompiler(fset, "source", nil).Import(sp.PkgName)
+	//pkg, err := importer.Default().Import(sp.PkgName)
 	if err != nil {
 		return err
 	}
@@ -49,10 +53,10 @@ func (sp *PackageParser) Parse() error {
 			*/
 		}
 	}
+	gproot := os.Getenv("GOPATH")
 	cfg := &packages.Config{
 		//Dir:  "/home/bketelsen/projects/gq/src/blog/models",
-
-		Dir:  "/home/bketelsen/projects/gq/src/blog/models",
+		Dir:  gproot,
 		Mode: packages.LoadAllSyntax}
 
 	pkgs, err := packages.Load(cfg, sp.PkgName)
